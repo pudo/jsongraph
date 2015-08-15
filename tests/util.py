@@ -35,3 +35,11 @@ def create_resolver():
 
 
 resolver = create_resolver()
+
+
+def make_test_graph():
+    from jsongraph.graph import Graph
+    graph = Graph(resolver=resolver)
+    graph.register('person', PERSON_URI)
+    graph.register('organization', ORG_URI)
+    return graph

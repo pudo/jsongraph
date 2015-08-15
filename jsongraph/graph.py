@@ -2,6 +2,8 @@ from rdflib import URIRef, plugin, ConjunctiveGraph
 from rdflib.store import Store
 from jsonschema import RefResolver
 
+from jsongraph.context import Context
+
 
 class Graph(object):
     """ Registry for assigning names aliases to certain schemata. """
@@ -48,6 +50,12 @@ class Graph(object):
                                            identifier=self.base_uri)
         return self._graph
 
+    def context(self, identifier=None, provenance=None):
+        """ Get or create a context, with the given identifier and/or
+        provenance data. A context can be used to add, update or delete
+        objects in the store. """
+        return Context(self, identifier=identifier, provenance=provenance)
+
     def register(self, alias, uri):
         """ Register a new schema URI under a given name. """
         # TODO: do we want to constrain the valid alias names.
@@ -63,6 +71,14 @@ class Graph(object):
 
     def get_schema(self, alias):
         """ Actually resolve the schema for the given alias/URI. """
+        if isinstance(alias, dict):
+            return alias
         uri = self.get_uri(alias)
         uri, schema = self.resolver.resolve(uri)
         return schema
+
+    def __str__(self):
+        return self.base_uri
+
+    def __repr__(self):
+        return '<Graph("%s")>' % self.base_uri

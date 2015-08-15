@@ -2,17 +2,15 @@ from unittest import TestCase
 
 from jsongraph.graph import Graph
 
-from .util import resolver
-from .util import PERSON_URI, MEM_URI, ORG_URI
+from .util import make_test_graph, resolver
+from .util import PERSON_URI, MEM_URI
 
 
 class RegistryTestCase(TestCase):
 
     def setUp(self):
         super(RegistryTestCase, self).setUp()
-        self.graph = Graph(resolver=resolver)
-        self.graph.register('person', PERSON_URI)
-        self.graph.register('organization', ORG_URI)
+        self.graph = make_test_graph()
 
     def test_register(self):
         assert self.graph.resolver == resolver, self.graph

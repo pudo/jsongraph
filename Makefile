@@ -3,6 +3,9 @@ test: install
 	@rm -rf **/*.pyc
 	@env/bin/nosetests --with-coverage --cover-package=jsongraph --cover-erase
 
+testxml: install
+	@env/bin/nosetests --with-xunit --xunit-file=test_output.xml
+
 install: env/bin/python
 
 env/bin/python:

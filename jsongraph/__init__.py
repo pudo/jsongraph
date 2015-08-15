@@ -1,3 +1,3 @@
-from jsongraph.converter import Converter
+from jsongraph.graph import Graph
 
-__all__ = [Converter]
+__all__ = [Graph]
