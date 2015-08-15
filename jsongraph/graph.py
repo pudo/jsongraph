@@ -1,35 +1,57 @@
+from rdflib import URIRef, plugin, ConjunctiveGraph
+from rdflib.store import Store
 from jsonschema import RefResolver
 
 
 class Graph(object):
     """ Registry for assigning names aliases to certain schemata. """
 
-    def __init__(self, base_uri=None, resolver=None, aliases=None):
+    def __init__(self, base_uri=None, resolver=None, aliases=None,
+                 rdf_store=None):
         self._resolver = resolver
         self._base_uri = base_uri
+        self._store = rdf_store
         self.aliases = aliases or {}
 
     @property
     def base_uri(self):
+        """ Resolution base for JSON schema. Also used as the default
+        graph ID for RDF. """
         if self._base_uri is None:
             if self._resolver is not None:
-                return self.resolver.resolution_scope
-        return self._base_uri
+                self._base_uri = self.resolver.resolution_scope
+            else:
+                self.base_uri = 'http://pudo.github.io/jsongraph'
+        return URIRef(self._base_uri)
 
     @property
     def resolver(self):
+        """ Resolver for JSON Schema references. This can be based around a
+        file or HTTP-based resolution base URI. """
         if self._resolver is None:
             self._resolver = RefResolver(self.base_uri, {})
         return self._resolver
+
+    @property
+    def store(self):
+        """ Backend storage for RDF data. Either an in-memory store, or an
+        external triple store controlled via SPARQL. """
+        if self._store is None:
+            self._store = plugin.get('IOMemory', Store)()
+        return self._store
+
+    @property
+    def graph(self):
+        """ A conjunctive graph of all statements in the current instance. """
+        if not hasattr(self, '_graph') or self._graph is None:
+            self._graph = ConjunctiveGraph(store=self.store,
+                                           identifier=self.base_uri)
+        return self._graph
 
     def register(self, alias, uri):
         """ Register a new schema URI under a given name. """
         # TODO: do we want to constrain the valid alias names.
         self.aliases[alias] = uri
-
-    @property
-    def names(self):
-        return self.aliases.keys()
 
     def get_uri(self, alias):
         """ Get the URI for a given alias. A registered URI will return itself,

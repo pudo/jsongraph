@@ -34,4 +34,9 @@ class RegistryTestCase(TestCase):
         assert schema1['id'] == PERSON_URI, schema1['id']
 
     def test_resolver(self):
-        assert self.graph.resolver.resolution_scope == self.graph.base_uri
+        assert self.graph.resolver.resolution_scope in self.graph.base_uri
+
+    def test_graph(self):
+        g = self.graph.graph
+        assert g.store == self.graph.store, g.store
+        assert g.identifier == self.graph.base_uri, g.identifier
