@@ -19,7 +19,6 @@ from jsongraph import Graph
 graph = Graph(base_uri='file:///path/to/schema/files')
 context = graph.context()
 context.add('person_schema.json', data)
-context.save()
 
 uri = 'urn:prod'
 graph.consolidate(uri)

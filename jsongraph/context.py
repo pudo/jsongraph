@@ -24,15 +24,17 @@ class Context(object):
         """ Stage ``data`` as a set of statements, based on the given
         ``schema`` definition. """
         schema = self.parent.get_schema(schema)
-        return Converter.import_data(self.parent.resolver, self.graph,
-                                     data, schema)
+        uri = Converter.import_data(self.parent.resolver, self.graph,
+                                    data, schema)
+        self.save()
+        return uri
 
     def save(self):
         """ Transfer the statements in this context over to the main store. """
         query = 'INSERT DATA { GRAPH %s { %s } }'
         query = query % (self.identifier.n3(),
                          self.graph.serialize(format='nt'))
-        print query
+        # print query
         self.parent.graph.update(query)
         self.flush()
 

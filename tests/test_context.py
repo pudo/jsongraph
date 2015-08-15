@@ -17,22 +17,20 @@ class ContextTestCase(TestCase):
         ctx = self.graph.context()
         assert 'urn' in repr(ctx), repr(ctx)
         assert str(ctx) in repr(ctx), repr(ctx)
+        sc = lambda: len(list(self.graph.graph.triples((None, None, None))))
 
         for org in sorted(self.data['organizations']):
             ctx_id = ctx.add('organization', org)
+            ctx_len = len(list(ctx.graph.triples((None, None, None))))
             assert ctx_id is not None
-            break
+            assert sc() == 0, sc()
+            assert ctx_len != 0, ctx_len
+            ctx.save()
+            assert sc() == ctx_len, sc()
+            ctx.delete()
+            assert sc() == 0, sc()
 
         # for pers in self.data['persons']:
         #     ctx_id = ctx.add('person', pers)
         #     assert ctx_id is not None
         #     break
-
-        sc = lambda: len(list(self.graph.graph.triples((None, None, None))))
-        ctx_len = len(list(ctx.graph.triples((None, None, None))))
-        assert sc() == 0, sc()
-        assert ctx_len != 0, ctx_len
-        ctx.save()
-        assert sc() == ctx_len, sc()
-        ctx.delete()
-        assert sc() == 0, sc()
