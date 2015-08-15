@@ -1,11 +1,26 @@
+from jsonschema import RefResolver
 
 
 class Graph(object):
     """ Registry for assigning names aliases to certain schemata. """
 
-    def __init__(self, resolver, aliases=None):
-        self.resolver = resolver
+    def __init__(self, base_uri=None, resolver=None, aliases=None):
+        self._resolver = resolver
+        self._base_uri = base_uri
         self.aliases = aliases or {}
+
+    @property
+    def base_uri(self):
+        if self._base_uri is None:
+            if self._resolver is not None:
+                return self.resolver.resolution_scope
+        return self._base_uri
+
+    @property
+    def resolver(self):
+        if self._resolver is None:
+            self._resolver = RefResolver(self.base_uri, {})
+        return self._resolver
 
     def register(self, alias, uri):
         """ Register a new schema URI under a given name. """
