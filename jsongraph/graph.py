@@ -1,6 +1,6 @@
 
 
-class SchemaRegistry(object):
+class Graph(object):
     """ Registry for assigning names aliases to certain schemata. """
 
     def __init__(self, resolver, aliases=None):

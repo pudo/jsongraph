@@ -1,8 +1,8 @@
 from unittest import TestCase
 
-from jsongraph.registry import SchemaRegistry
+from jsongraph.graph import Graph
 
-from .util import resolver, fixture_uri
+from .util import resolver
 from .util import PERSON_URI, MEM_URI, ORG_URI
 
 
@@ -10,7 +10,7 @@ class RegistryTestCase(TestCase):
 
     def setUp(self):
         super(RegistryTestCase, self).setUp()
-        self.reg = SchemaRegistry(resolver)
+        self.reg = Graph(resolver)
         self.reg.register('person', PERSON_URI)
         self.reg.register('organization', ORG_URI)
 

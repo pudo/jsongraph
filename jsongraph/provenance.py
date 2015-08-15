@@ -8,6 +8,14 @@ from jsongraph import uri
 from jsongraph.vocab import META, BNode, get_graph
 
 
+class Provenance(object):
+
+    def __init__(self, label=None, url=None, file=None):
+        self.label = label
+        self.url = url
+        self.file = file
+
+
 def get_context(source_url=None, source_title=None, source_file=None):
     """ Generate a graph with some provenance information attached to it. """
     identifier = None
