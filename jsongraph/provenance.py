@@ -9,33 +9,33 @@ from jsongraph.vocab import META, BNode, get_graph
 
 
 class Provenance(object):
+    """ This object retains information on the origin and trustworthiness of
+    a particular subset of the data. """
 
-    def __init__(self, label=None, url=None, file=None):
-        self.label = label
-        self.url = url
-        self.file = file
-        self.created_at = datetime.utcnow()
+    def __init__(self, context, data=None):
+        self.context = context
+        self.data = self._load()
+        self.data.update(data or {})
+        if 'created_at' not in self.data:
+            self.data['created_at'] = datetime.utcnow()
+        self.saved = False
 
+    def _load(self):
+        """ Load provenance info from the main store. """
+        data, graph = {}, self.context.parent.graph
+        for (_, p, o) in graph.triples((self.context.identifier, None, None)):
+            if not p.startswith(META):
+                continue
+            name = p[len(META):]
+            data[name] = o.toPython()
+        return data
 
-def get_context(source_url=None, source_title=None, source_file=None):
-    """ Generate a graph with some provenance information attached to it. """
-    identifier = None
-    if uri.check(source_url):
-        identifier = URIRef(uri.make_safe(source_url))
-    if identifier is None:
-        if source_file is not None:
-            identifier = 'file://' + urllib.pathname2url(source_file)
-            identifier = URIRef(identifier)
-        else:
-            identifier = BNode()
-    ctx = get_graph(identifier=identifier)
-    ctx.add((identifier, RDF.type, META.Provenance))
-    if source_url:
-        ctx.add((identifier, META.sourceUrl,
-                 URIRef(uri.make_safe(source_url))))
-    if source_title:
-        ctx.add((identifier, META.source, Literal(source_title)))
-    if source_file:
-        ctx.add((identifier, META.sourceFile, Literal(source_file)))
-    ctx.add((identifier, META.created, Literal(datetime.utcnow())))
-    return ctx
+    def generate(self):
+        """ Add provenance info to the context graph. """
+        t = (self.context.identifier, RDF.type, META.Provenance)
+        if t not in self.context.graph:
+            self.context.graph.add(t)
+        for name, value in self.data.items():
+            t = (self.context.identifier, META[name], Literal(value))
+            if t not in self.context.graph:
+                self.context.graph.add(t)

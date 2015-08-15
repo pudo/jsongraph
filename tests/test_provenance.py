@@ -1,26 +1,18 @@
 # from rdflib import ConjunctiveGraph
 from unittest import TestCase
 
-from jsongraph import provenance
+from jsongraph.provenance import Provenance
+
+from .util import make_test_graph
 
 
 class ProvenanceTestCase(TestCase):
 
     def setUp(self):
         super(ProvenanceTestCase, self).setUp()
+        self.graph = make_test_graph()
 
     def test_basic_context(self):
-        ctx = provenance.get_context(source_url='http://pudo.org')
-        assert len(ctx) == 3, len(ctx)
-        assert 'pudo.org' in ctx.identifier, ctx.identifier
-
-    def test_title(self):
-        ctx = provenance.get_context(source_url='http://pudo.org',
-                                     source_title='Foo Bar')
-        assert len(ctx) == 4, len(ctx)
-
-    def test_file(self):
-        ctx = provenance.get_context(source_file='README.txt')
-        assert len(ctx) == 3, len(ctx)
-        assert 'file://README.txt' in ctx.identifier, ctx.identifier
-        # assert False, ctx.serialize(format='n3')
+        data = {'source_url': 'http://pudo.org'}
+        ctx = self.graph.context(prov=data)
+        assert 'pudo.org' in ctx.prov.data.get('source_url')

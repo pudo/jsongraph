@@ -50,11 +50,11 @@ class Graph(object):
                                            identifier=self.base_uri)
         return self._graph
 
-    def context(self, identifier=None, provenance=None):
+    def context(self, identifier=None, prov=None):
         """ Get or create a context, with the given identifier and/or
         provenance data. A context can be used to add, update or delete
         objects in the store. """
-        return Context(self, identifier=identifier, provenance=provenance)
+        return Context(self, identifier=identifier, prov=prov)
 
     def register(self, alias, uri):
         """ Register a new schema URI under a given name. """

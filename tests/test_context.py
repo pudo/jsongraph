@@ -21,16 +21,15 @@ class ContextTestCase(TestCase):
 
         for org in sorted(self.data['organizations']):
             ctx_id = ctx.add('organization', org)
-            ctx_len = len(list(ctx.graph.triples((None, None, None))))
             assert ctx_id is not None
-            assert sc() == 0, sc()
-            assert ctx_len != 0, ctx_len
-            ctx.save()
-            assert sc() == ctx_len, sc()
             ctx.delete()
             assert sc() == 0, sc()
 
-        # for pers in self.data['persons']:
-        #     ctx_id = ctx.add('person', pers)
-        #     assert ctx_id is not None
-        #     break
+    def test_restore_context(self):
+        ctx = self.graph.context()
+        for org in sorted(self.data['organizations']):
+            ctx.add('organization', org)
+
+        ctx2 = self.graph.context(identifier=ctx.identifier)
+        assert ctx is not ctx2, (ctx, ctx2)
+        assert ctx.prov.data['created_at'] == ctx2.prov.data['created_at']

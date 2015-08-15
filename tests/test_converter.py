@@ -3,7 +3,6 @@ from rdflib import Graph
 from unittest import TestCase
 
 from jsongraph.converter import Converter
-from jsongraph.provenance import get_context
 
 from .util import resolver, fixture_file
 from .util import PERSON_URI, ORG_URI
@@ -33,11 +32,11 @@ class ConverterTestCase(TestCase):
         assert len(list(ng.triples((None, None, None)))) > 0
 
     def test_graph_import(self):
-        ng = get_context(source_url='http://pudo.org', source_title='pudo.org')
+        ng = Graph()
         for org in self.data['organizations']:
             uri = Converter.import_data(resolver, ng, org, self.org_schema)
             assert uri is not None
             break
 
         serialized = ng.serialize(format='n3')
-        assert '<http://pudo.org>' in serialized
+        assert '</meta/created_at>' not in serialized
