@@ -14,6 +14,7 @@ class Provenance(object):
         self.label = label
         self.url = url
         self.file = file
+        self.created_at = datetime.utcnow()
 
 
 def get_context(source_url=None, source_title=None, source_file=None):

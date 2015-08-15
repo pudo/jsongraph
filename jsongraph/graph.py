@@ -23,7 +23,7 @@ class Graph(object):
             if self._resolver is not None:
                 self._base_uri = self.resolver.resolution_scope
             else:
-                self.base_uri = 'http://pudo.github.io/jsongraph'
+                self._base_uri = 'http://pudo.github.io/jsongraph'
         return URIRef(self._base_uri)
 
     @property
@@ -74,6 +74,8 @@ class Graph(object):
         if isinstance(alias, dict):
             return alias
         uri = self.get_uri(alias)
+        if uri is None:
+            return None
         uri, schema = self.resolver.resolve(uri)
         return schema
 

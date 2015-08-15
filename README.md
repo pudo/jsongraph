@@ -18,10 +18,10 @@ from jsongraph import Graph
 
 graph = Graph(base_uri='file:///path/to/schema/files')
 context = graph.context()
-context.add_object(data)
-context.apply()
+context.add('person_schema.json', data)
+context.save()
 
-uri = 'urn:test:prod'
+uri = 'urn:prod'
 graph.consolidate(uri)
 res = graph.query([{"name": None, "limit": 5}])
 ```

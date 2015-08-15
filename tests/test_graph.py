@@ -12,6 +12,14 @@ class RegistryTestCase(TestCase):
         super(RegistryTestCase, self).setUp()
         self.graph = make_test_graph()
 
+    def test_construct(self):
+        graph = Graph()
+        assert 'github.io' in graph.base_uri, graph.base_uri
+        assert graph.get_schema('foo') is None, graph.get_schema('foo')
+        assert graph.get_schema({}) == {}, graph.get_schema({})
+        assert 'github.io' in repr(graph), repr(graph)
+        assert str(graph) in repr(graph), repr(graph)
+
     def test_register(self):
         assert self.graph.resolver == resolver, self.graph
         assert 'membership' not in self.graph.aliases
