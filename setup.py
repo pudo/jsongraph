@@ -32,6 +32,10 @@ setup(
     install_requires=[
         'jsonmapping',
         'jsonschema',
+        'rdflib',
+        'requests>=2.0',
+        'normality',
+        'pyyaml',
         'six'
     ],
     tests_require=[

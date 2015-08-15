@@ -1,5 +1,6 @@
 
 test: install
+	@rm -rf **/*.pyc
 	@env/bin/nosetests --with-coverage --cover-package=jsongraph --cover-erase
 
 install: env/bin/python
