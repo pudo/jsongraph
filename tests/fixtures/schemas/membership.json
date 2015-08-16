@@ -27,7 +27,7 @@
       "type": ["string", "null"],
       "rdfName": "person",
       "rdfType": "id",
-      "rdfReverseName": "memberships"
+      "rdfReversePredicate": "/data/fields/memberships"
     },
     "person": {
       "description": "The person who is a member of the organization",

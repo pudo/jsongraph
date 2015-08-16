@@ -5,7 +5,7 @@ from normality import normalize
 # from sqlalchemy.orm import aliased
 
 from jsongraph.query.util import OP_EQ, OP_LIKE, OP_IN, OP_NOT
-from jsongraph.query.util import OP_SIM, OP_NIN
+from jsongraph.query.util import OP_NIN
 
 # TODO: split out the parts that affect graph filtering and
 # results processing / reconstruction.
@@ -184,9 +184,6 @@ class QueryBuilder(object):
             'parent_id': data.get('parent_id')
         }
 
-        if 'score' in data:
-            obj['score'] = data.get('score')
-
         for child in self.children:
             if self.node.blank:
                 obj[child.node.name] = child.node.data
@@ -214,10 +211,10 @@ class QueryBuilder(object):
         q = q.add_column(stmt.attribute.label('attribute'))
         q = q.add_column(stmt._value.label('value'))
 
-        if self.node.scored:
-            score = filter_sq.c.score.label('score')
-            q = q.add_column(score)
-            q = q.order_by(score.desc())
+        # if self.node.scored:
+        #     score = filter_sq.c.score.label('score')
+        #     q = q.add_column(score)
+        #     q = q.order_by(score.desc())
 
         if parents is not None:
             q = q.add_column(filter_sq.c.parent_id.label('parent_id'))
