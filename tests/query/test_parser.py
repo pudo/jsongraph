@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from jsongraph.query import QueryNode
+from jsongraph.query import QueryNode, util
 
 
 def query(q):
@@ -31,6 +31,31 @@ class ContextTestCase(TestCase):
     def test_nesting(self):
         _, res = query([{'foo': {'bar': 'quux'}, 'xxx': 4}])
         assert len(res['children']) == 2, res['children']
+
+    def test_inverted(self):
+        qn, res = query([{'!foo': 'tmux'}])
+        for c in qn.children:
+            assert c.inverted, (c, c.inverted)
+
+    def test_operators(self):
+        qn, res = query([{
+            'foo': 5,
+            'bar~=': "hello",
+            "x!=": "lala",
+            "t|=": [4, 5]
+        }])
+        assert len(res['children']) == 4, res['children']
+        for c in qn.children:
+            if c.name == 'foo':
+                assert c.op == util.OP_EQ
+            elif c.name == 'bar':
+                assert c.op == util.OP_LIKE
+            elif c.name == 'x':
+                assert c.op == util.OP_NOT
+            elif c.name == 't':
+                assert c.op == util.OP_IN
+            else:
+                assert False, (c, c.name)
 
     def test_wildcards(self):
         qn, res = query([{'*': None}])

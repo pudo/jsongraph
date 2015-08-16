@@ -4,7 +4,6 @@ OP_IN = '|='
 OP_NOT = '!='
 OP_NIN = '|!='
 OP_LIKE = '~='
-OP_SIM = '%='
 
 
 def parse_name(name):
@@ -12,7 +11,7 @@ def parse_name(name):
     inverted. """
     inverted, op = False, OP_EQ
     if name is not None:
-        for op_ in (OP_NIN, OP_IN, OP_NOT, OP_LIKE, OP_SIM):
+        for op_ in (OP_NIN, OP_IN, OP_NOT, OP_LIKE):
             if name.endswith(op_):
                 op = op_
                 name = name[:len(name) - len(op)]
