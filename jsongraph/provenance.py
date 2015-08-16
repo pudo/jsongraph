@@ -1,11 +1,9 @@
-import urllib
 from datetime import datetime
 
-from rdflib import URIRef, Literal
+from rdflib import Literal
 from rdflib.namespace import RDF
 
-from jsongraph import uri
-from jsongraph.vocab import META, BNode, get_graph
+from jsongraph.vocab import META
 
 
 class Provenance(object):
