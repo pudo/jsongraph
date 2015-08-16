@@ -27,24 +27,24 @@
       "type": ["string", "null"],
       "rdfName": "person",
       "rdfType": "id",
-      "rdfReversePredicate": "/data/fields/memberships"
+      "rdfReverse": "memberships"
     },
     "person": {
       "description": "The person who is a member of the organization",
       "$ref": "http://www.popoloproject.com/schemas/person.json#",
-      "rdfReverseName": "memberships"
+      "rdfReverse": "memberships"
     },
     "organization_id": {
       "description": "The ID of the organization in which the person or organization is a member",
       "type": ["string", "null"],
       "rdfName": "organization",
       "rdfType": "id",
-      "rdfReverseName": "memberships"
+      "rdfReverse": "memberships"
     },
     "organization": {
       "description": "The organization in which the person or organization is a member",
       "$ref": "http://www.popoloproject.com/schemas/organization.json#",
-      "rdfReverseName": "memberships"
+      "rdfReverse": "memberships"
     },
     "post_id": {
       "description": "The ID of the post held by the member in the organization through this membership",

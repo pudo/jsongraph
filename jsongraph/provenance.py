@@ -27,7 +27,6 @@ class Provenance(object):
                 continue
             name = p[len(META):]
             data[name] = o.toPython()
-        print "LOADED", data
         return data
 
     def generate(self):

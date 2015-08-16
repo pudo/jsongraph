@@ -27,19 +27,11 @@ class Binding(SchemaVisitor):
 
     @property
     def predicate(self):
-        predicate = self.schema.get('rdfPredicate')
-        if predicate is None:
-            name = self.schema.get('rdfName', self.name)
-            predicate = PRED[name]
-        return URIRef(predicate)
+        return URIRef(PRED[self.name])
 
     @property
     def reverse(self):
-        predicate = self.schema.get('rdfReversePredicate')
-        if predicate is not None:
-            return URIRef(predicate)
-
-        name = self.schema.get('rdfReverseName')
+        name = self.schema.get('rdfReverse')
         if name is not None:
             return PRED[name]
 
