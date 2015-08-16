@@ -24,11 +24,13 @@ class ContextTestCase(TestCase):
             assert ctx_id is not None
             ctx.delete()
             assert sc() == 0, sc()
+            break
 
     def test_restore_context(self):
         ctx = self.graph.context()
         for org in sorted(self.data['organizations']):
             ctx.add('organization', org)
+            break
 
         ctx2 = self.graph.context(identifier=ctx.identifier)
         assert ctx is not ctx2, (ctx, ctx2)

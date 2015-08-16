@@ -1,7 +1,8 @@
-from rdflib import Graph, URIRef
+from rdflib import Graph, URIRef, RDF
 
 from jsongraph.converter import Converter
-from jsongraph.vocab import BNode, META
+from jsongraph.vocab import BNode
+from jsongraph.binding import Binding
 from jsongraph.provenance import Provenance
 
 
@@ -20,12 +21,52 @@ class Context(object):
             self._graph = Graph(identifier=self.identifier)
         return self._graph
 
+    def get_binding(self, schema, data):
+        """ For a given schema, get a binding mediator providing links to the
+        RDF terms matching that schema. """
+        schema = self.parent.get_schema(schema)
+        return Binding(schema, self.parent.resolver, data=data)
+
+    def _triplify_object(self, binding):
+        """ Create bi-directional bindings for object relationships. """
+        if binding.uri:
+            self.graph.add((binding.subject, RDF.type, binding.uri))
+
+        if binding.parent is not None:
+            parent = binding.parent.subject
+            if binding.parent.is_array:
+                parent = binding.parent.parent.subject
+            self.graph.add((parent, binding.predicate, binding.subject))
+            if binding.reverse is not None:
+                self.graph.add((binding.subject, binding.reverse, parent))
+
+        for prop in binding.properties:
+            self.triplify(prop)
+
+        return binding.subject
+
+    def triplify(self, binding):
+        """ Recursively generate RDF statement triples from the data and
+        schema supplied to the application. """
+        if binding.data is None:
+            return
+
+        if binding.is_object:
+            return self._triplify_object(binding)
+        elif binding.is_array:
+            for item in binding.items:
+                self.triplify(item)
+        else:
+            subject = binding.parent.subject
+            self.graph.add((subject, binding.predicate, binding.object))
+            if binding.reverse is not None:
+                self.graph.add((binding.object, binding.reverse, subject))
+
     def add(self, schema, data):
         """ Stage ``data`` as a set of statements, based on the given
         ``schema`` definition. """
-        schema = self.parent.get_schema(schema)
-        uri = Converter.import_data(self.parent.resolver, self.graph,
-                                    data, schema)
+        binding = self.get_binding(schema, data)
+        uri = self.triplify(binding)
         self.save()
         return uri
 

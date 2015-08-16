@@ -2,12 +2,6 @@ import urllib
 import urlparse
 
 
-def to_path(uri):
-    if uri.startswith('file://'):
-        uri = uri.replace('file://', '')
-    return uri
-
-
 def make_safe(url):
     if url is not None:
         (a, b, c, d, e) = urlparse.urlsplit(url)
