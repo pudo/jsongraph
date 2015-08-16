@@ -1,6 +1,6 @@
 import copy
 
-from jsongraph.query.util import parse_name, is_list, OP_SIM
+from jsongraph.query.util import parse_name, is_list
 
 
 class QueryNode(object):
@@ -78,16 +78,6 @@ class QueryNode(object):
     @property
     def leaf(self):
         return not isinstance(self.value, dict)
-
-    @property
-    def scored(self):
-        if self.leaf:
-            return self.op == OP_SIM
-        if self.root:
-            for child in self.children:
-                if child.scored:
-                    return True
-        return False
 
     @property
     def filtered(self):
