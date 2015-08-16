@@ -27,22 +27,6 @@ class QueryBuilder(object):
                 self._children.append(qb)
         return self._children
 
-    def _add_statement(self, q):
-        """ Generate a linked statement that can be used in any
-        part of the query. """
-        stmt = aliased(Statement)
-        ctx = aliased(Context)
-        q = q.filter(stmt.context_id == ctx.id)
-        if len(self.node.assumed):
-            q = q.filter(or_(
-                ctx.active == True,
-                stmt.context_id.in_(self.node.assumed)
-            )) # noqa
-        else:
-            q = q.filter(ctx.active == True) # noqa
-        q = q.filter(stmt.deleted_at == None) # noqa
-        return stmt, q
-
     def filter_value(self, q, filter_stmt):
         if self.node.op == OP_EQ:
             q = q.filter(filter_stmt._value == self.node.value)

@@ -17,5 +17,15 @@ class ContextTestCase(TestCase):
             self.context.add('person', per)
 
     def test_basic_query(self):
-        res = self.context.query({'limit': 1})
+        res = self.context.query({'limit': 1}).results()
         assert res['status'] == 'ok'
+
+    def test_nested_query(self):
+        res = self.context.query({
+            'memberships': [{
+                'organization': {'name': "SPD", "id": None}
+            }],
+            'contact_details': []
+        }).results()
+        assert res['status'] == 'ok'
+        assert False, res

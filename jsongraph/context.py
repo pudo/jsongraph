@@ -2,7 +2,7 @@ from rdflib import Graph, URIRef, RDF
 
 from jsongraph.vocab import BNode
 from jsongraph.binding import Binding
-from jsongraph.query import query
+from jsongraph.query import Query, QueryNode
 from jsongraph.provenance import Provenance
 
 
@@ -107,7 +107,7 @@ class Context(object):
     def query(self, q):
         """ Run a query using the jsongraph query dialect. This expects an
         input query, which can either be a dict or a list. """
-        return query(self, q)
+        return Query(self, None, QueryNode(None, None, q))
 
     def __str__(self):
         return self.identifier

@@ -37,23 +37,13 @@ class QueryNode(object):
 
     @property
     def specific_attribute(self):
-        return self.name not in ['*', 'id']
+        return self.name != '*'
 
     @property
     def nested(self):
         if not self.specific_attribute:
             return False
         return isinstance(self.value, dict)
-
-    @property
-    def attributes(self):
-        if self.name == '*':
-            return types.qualified.keys()
-        attributes = []
-        for qname, attr in types.qualified.items():
-            if attr.name == self.name:
-                attributes.append(qname)
-        return attributes
 
     @property
     def root(self):

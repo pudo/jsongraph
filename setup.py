@@ -33,6 +33,7 @@ setup(
         'jsonmapping',
         'jsonschema',
         'rdflib',
+        'sparqlquery',
         'requests>=2.0',
         'normality',
         'pyyaml',
