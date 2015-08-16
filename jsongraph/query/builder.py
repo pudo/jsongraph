@@ -55,20 +55,6 @@ class QueryBuilder(object):
         elif self.node.op == OP_LIKE:
             value = '%%%s%%' % normalize(self.node.value)
             q = q.filter(filter_stmt.normalized.like(value))
-        elif self.node.op == OP_SIM:
-            value = normalize(self.node.value)[:254]
-            field = func.left(filter_stmt.normalized, 254)
-
-            # calculate the similarity percentage
-            rel = func.greatest(max(float(len(self.node.value)), 1.0),
-                                func.length(filter_stmt.normalized))
-            distance = func.levenshtein(field, value)
-            score = ((rel - distance) / rel) * 100.0
-            q = q.filter(score > 1)
-            score = func.max(score).label('score')
-
-            q = q.add_column(score)
-            q = q.order_by(score.desc())
         return q
 
     def filter_subject(self, q, subject):
@@ -147,8 +133,8 @@ class QueryBuilder(object):
             q = q.group_by(parent_col)
 
         # TODO: implement other sorts
-        if self.node.sort == 'random':
-            q = q.order_by(func.random())
+        # if self.node.sort == 'random':
+        #     q = q.order_by(func.random())
 
         q = q.order_by(stmt.subject.asc())
 
