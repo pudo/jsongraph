@@ -20,12 +20,14 @@ class Provenance(object):
 
     def _load(self):
         """ Load provenance info from the main store. """
-        data, graph = {}, self.context.parent.graph
+        graph = self.context.parent.graph.get_context(self.context.identifier)
+        data = {}
         for (_, p, o) in graph.triples((self.context.identifier, None, None)):
             if not p.startswith(META):
                 continue
             name = p[len(META):]
             data[name] = o.toPython()
+        print "LOADED", data
         return data
 
     def generate(self):
@@ -34,6 +36,7 @@ class Provenance(object):
         if t not in self.context.graph:
             self.context.graph.add(t)
         for name, value in self.data.items():
-            t = (self.context.identifier, META[name], Literal(value))
-            if t not in self.context.graph:
-                self.context.graph.add(t)
+            pat = (self.context.identifier, META[name], None)
+            if pat in self.context.graph:
+                self.context.graph.remove(pat)
+            self.context.graph.add((pat[0], META[name], Literal(value)))

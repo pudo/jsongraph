@@ -37,9 +37,9 @@ def create_resolver():
 resolver = create_resolver()
 
 
-def make_test_graph():
+def make_test_graph(buffered=False):
     from jsongraph.graph import Graph
-    graph = Graph(resolver=resolver)
+    graph = Graph(resolver=resolver, buffered=buffered)
     graph.register('person', PERSON_URI)
     graph.register('organization', ORG_URI)
     return graph

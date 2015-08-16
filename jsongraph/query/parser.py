@@ -4,6 +4,9 @@ from jsongraph.query.util import parse_name, is_list
 
 
 class QueryNode(object):
+    """ A node in the query graph. This is used to interpret the structure of
+    the query body, and read by the query itself when constructing the
+    underlying SPARQL representation. """
 
     def __init__(self, parent, name, data):
         self.parent = parent

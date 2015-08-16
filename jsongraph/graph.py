@@ -1,5 +1,6 @@
 from rdflib import URIRef, plugin, ConjunctiveGraph
 from rdflib.store import Store
+from rdflib.plugins.memory import Memory, IOMemory
 from jsonschema import RefResolver
 
 from jsongraph.context import Context
@@ -9,10 +10,11 @@ class Graph(object):
     """ Registry for assigning names aliases to certain schemata. """
 
     def __init__(self, base_uri=None, resolver=None, aliases=None,
-                 rdf_store=None):
+                 rdf_store=None, buffered=None):
         self._resolver = resolver
         self._base_uri = base_uri
         self._store = rdf_store
+        self._buffered = buffered
         self.aliases = aliases or {}
 
     @property
@@ -49,6 +51,12 @@ class Graph(object):
             self._graph = ConjunctiveGraph(store=self.store,
                                            identifier=self.base_uri)
         return self._graph
+
+    @property
+    def buffered(self):
+        if self._buffered is None:
+            self._buffered = isinstance(self.store, (Memory, IOMemory))
+        return self._buffered
 
     def context(self, identifier=None, prov=None):
         """ Get or create a context, with the given identifier and/or

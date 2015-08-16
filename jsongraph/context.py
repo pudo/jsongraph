@@ -1,8 +1,8 @@
 from rdflib import Graph, URIRef, RDF
 
-from jsongraph.converter import Converter
 from jsongraph.vocab import BNode
 from jsongraph.binding import Binding
+from jsongraph.query import query
 from jsongraph.provenance import Provenance
 
 
@@ -14,11 +14,15 @@ class Context(object):
             identifier = BNode()
         self.identifier = URIRef(identifier)
         self.prov = Provenance(self, prov)
+        self.prov.generate()
 
     @property
     def graph(self):
         if not hasattr(self, '_graph') or self._graph is None:
-            self._graph = Graph(identifier=self.identifier)
+            if self.parent.buffered:
+                self._graph = Graph(identifier=self.identifier)
+            else:
+                self._graph = self.parent.graph.get_context(self.identifier)
         return self._graph
 
     def get_binding(self, schema, data):
@@ -66,37 +70,44 @@ class Context(object):
         """ Stage ``data`` as a set of statements, based on the given
         ``schema`` definition. """
         binding = self.get_binding(schema, data)
-        uri = self.triplify(binding)
-        self.save()
-        return uri
+        return self.triplify(binding)
 
     def save(self):
         """ Transfer the statements in this context over to the main store. """
-        self.prov.generate()
-        query = """
-            DELETE WHERE { GRAPH %s { %s ?pred ?val } } ;
-            INSERT DATA { GRAPH %s { %s } }
-        """
-        query = query % (self.identifier.n3(),
-                         self.identifier.n3(),
-                         self.identifier.n3(),
-                         self.graph.serialize(format='nt'))
-        print query
-        self.parent.graph.update(query)
-        self.flush()
-        self._create = False
+        if not self.parent.buffered:
+            self.graph.remove((self.identifier, None, None))
+            self.prov.generate()
+        else:
+            query = """
+                DELETE WHERE { GRAPH %s { %s ?pred ?val } } ;
+                INSERT DATA { GRAPH %s { %s } }
+            """
+            query = query % (self.identifier.n3(),
+                             self.identifier.n3(),
+                             self.identifier.n3(),
+                             self.graph.serialize(format='nt'))
+            self.parent.graph.update(query)
+            self.flush()
 
     def delete(self):
         """ Delete all statements matching the current context identifier
         from the main store. """
-        query = 'CLEAR SILENT GRAPH %s ;' % self.identifier.n3()
-        self.parent.graph.update(query)
-        self.flush()
+        if self.parent.buffered:
+            query = 'CLEAR SILENT GRAPH %s ;' % self.identifier.n3()
+            self.parent.graph.update(query)
+            self.flush()
+        else:
+            self.graph.remove((None, None, None))
 
     def flush(self):
         """ Clear all the pending statements in the local context, without
         transferring them to the main store. """
         self._graph = None
+
+    def query(self, q):
+        """ Run a query using the jsongraph query dialect. This expects an
+        input query, which can either be a dict or a list. """
+        return query(self, q)
 
     def __str__(self):
         return self.identifier
