@@ -16,6 +16,7 @@ class Query(object):
         self.context = context
         self.parent = parent
         self.node = node
+        self._results = []
         if node.name is None:
             self.id = 'root'
         else:
@@ -74,11 +75,50 @@ class Query(object):
         subq = subq.distinct()
         q = q.where(subq)
         print 'QUERY', q.compile()
-        return q.execute(self.context.graph)
+        return q
+
+    def collect(self, row):
+        parent = None
+        if self.parent:
+            parent = row.get(self.parent.id)
+
+        name = self.node.name
+        value = row.get(self.id)
+        self._results.append((parent, name, value))
+
+        for child in self.children:
+            child.collect(row)
+
+    def assemble(self, parent_id=None):
+        items = []
+        name = None
+        for (parent, name, value) in self._results:
+            if parent != parent_id:
+                continue
+
+            if self.node.leaf:
+                items.append(value)
+            else:
+                data = {}
+                for child in self.children:
+                    name, out = child.assemble(parent_id=value)
+                    data[name] = out
+                items.append(data)
+
+        if not self.node.many:
+            items = items.pop() if len(items) else None
+        return name, items
 
     def run(self):
-        self.query()
-        return None
+        res = self.query().execute(self.context.graph)
+        for row in res:
+            data = {}
+            for k, v in row.asdict().items():
+                data[k] = v.toPython()
+            print data
+            self.collect(data)
+        name, result = self.assemble()
+        return result
 
     def results(self):
         t = time()

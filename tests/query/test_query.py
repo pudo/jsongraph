@@ -16,9 +16,19 @@ class ContextTestCase(TestCase):
         for per in sorted(self.data['persons']):
             self.context.add('person', per)
 
-    def test_basic_query(self):
-        res = self.context.query({'limit': 1}).results()
+    # def test_basic_query(self):
+    #     res = self.context.query({'limit': 1, 'name': None}).results()
+    #     assert res['status'] == 'ok'
+    #     from pprint import pprint
+    #     pprint(res)
+    #     assert False
+
+    def test_list_query(self):
+        res = self.context.query([{'id': None, 'name': None}]).results()
         assert res['status'] == 'ok'
+        from pprint import pprint
+        pprint(res)
+        assert False
 
     def test_nested_query(self):
         res = self.context.query({
@@ -28,4 +38,6 @@ class ContextTestCase(TestCase):
             'contact_details': []
         }).results()
         assert res['status'] == 'ok'
-        assert False, res
+        # from pprint import pprint
+        # pprint(res)
+        # assert False
