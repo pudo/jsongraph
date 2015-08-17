@@ -67,13 +67,16 @@ class Query(object):
         q = self.project(q)
         q = self.filter(q)
 
-        subq = Select([self.var])
-        subq = self.filter(subq)
+        # subq = Select([self.var])
+        # subq = self.filter(subq)
+        # if self.parent is None:
+        #     subq = subq.offset(self.node.offset)
+        #     subq = subq.limit(self.node.limit)
+        # subq = subq.distinct()
+        # q = q.where(subq)
         if self.parent is None:
-            subq = subq.offset(self.node.offset)
-            subq = subq.limit(self.node.limit)
-        subq = subq.distinct()
-        q = q.where(subq)
+            q = q.offset(self.node.offset)
+            q = q.limit(self.node.limit)
         print 'QUERY', q.compile()
         return q
 
