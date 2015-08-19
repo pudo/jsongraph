@@ -44,7 +44,6 @@ class Query(object):
     def project(self, q):
         """ Figure out which attributes should be returned for the current
         level of the query. """
-        attrs = set()
         q = q.project(self.var, append=True)
         for child in self.children:
             if child.node.blank:
@@ -54,7 +53,9 @@ class Query(object):
     def filter(self, q):
         """ Apply any filters to the query. """
         if self.node.leaf and self.node.filtered:
-            q = q.where((self.parent.var, self.predicate, Literal(self.node.value)))
+            q = q.where((self.parent.var,
+                         self.predicate,
+                         Literal(self.node.value)))
         elif self.parent is not None:
             q = q.where((self.parent.var, self.predicate, self.var))
         for child in self.children:
@@ -62,18 +63,19 @@ class Query(object):
         return q
 
     def query(self):
-        """ Compose the query by traversing all nodes and generating SPARQL. """
+        """ Compose the query by traversing all nodes and generating SPARQL.
+        """
         q = Select([])
         q = self.project(q)
         q = self.filter(q)
 
-        # subq = Select([self.var])
-        # subq = self.filter(subq)
-        # if self.parent is None:
-        #     subq = subq.offset(self.node.offset)
-        #     subq = subq.limit(self.node.limit)
-        # subq = subq.distinct()
-        # q = q.where(subq)
+        subq = Select([self.var])
+        subq = self.filter(subq)
+        if self.parent is None:
+            subq = subq.offset(self.node.offset)
+            subq = subq.limit(self.node.limit)
+        subq = subq.distinct()
+        q = q.where(subq)
         if self.parent is None:
             q = q.offset(self.node.offset)
             q = q.limit(self.node.limit)
@@ -115,9 +117,10 @@ class Query(object):
     def run(self):
         res = self.query().execute(self.context.graph)
         for row in res:
+            print 'ROW', row
             data = {}
-            for k, v in row.asdict().items():
-                data[k] = v.toPython()
+            for k, val in row.asdict().items():
+                data[k] = val.toPython()
             print data
             self.collect(data)
         name, result = self.assemble()

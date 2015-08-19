@@ -10,10 +10,10 @@ class Graph(object):
     """ Registry for assigning names aliases to certain schemata. """
 
     def __init__(self, base_uri=None, resolver=None, aliases=None,
-                 rdf_store=None, buffered=None):
+                 store=None, buffered=None):
         self._resolver = resolver
         self._base_uri = base_uri
-        self._store = rdf_store
+        self._store = store
         self._buffered = buffered
         self.aliases = aliases or {}
 
