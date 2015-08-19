@@ -1,21 +1,21 @@
 
 test: install
 	@rm -rf **/*.pyc
-	@env/bin/nosetests --with-coverage --cover-package=jsongraph --cover-erase
+	@pyenv/bin/nosetests --with-coverage --cover-package=jsongraph --cover-erase
 
 testxml: install
-	@env/bin/nosetests --with-xunit --xunit-file=test_output.xml
+	@pyenv/bin/nosetests --with-xunit --xunit-file=test_output.xml
 
-install: env/bin/python
+install: pyenv/bin/python
 
-env/bin/python:
-	virtualenv env
-	env/bin/pip install --upgrade pip
-	env/bin/pip install wheel nose coverage unicodecsv python-dateutil
-	env/bin/pip install -e .
+pyenv/bin/python:
+	virtualenv pyenv
+	pyenv/bin/pip install --upgrade pip
+	pyenv/bin/pip install wheel nose coverage unicodecsv python-dateutil
+	pyenv/bin/pip install -e .
 
 upload: clean install
-	env/bin/python setup.py sdist bdist_wheel upload
+	pyenv/bin/python setup.py sdist bdist_wheel upload
 
 clean:
-	rm -rf env
+	rm -rf pyenv
