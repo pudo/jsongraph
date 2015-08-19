@@ -4,9 +4,10 @@ from rdflib.plugins.memory import Memory, IOMemory
 from jsonschema import RefResolver
 
 from jsongraph.context import Context
+from jsongraph.common import GraphOperations
 
 
-class Graph(object):
+class Graph(GraphOperations):
     """ Registry for assigning names aliases to certain schemata. """
 
     def __init__(self, base_uri=None, resolver=None, aliases=None,
@@ -16,6 +17,10 @@ class Graph(object):
         self._store = store
         self._buffered = buffered
         self.aliases = aliases or {}
+
+    @property
+    def parent(self):
+        return self
 
     @property
     def base_uri(self):

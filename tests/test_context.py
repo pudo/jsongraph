@@ -46,6 +46,10 @@ class ContextTestCase(TestCase):
         assert len(loaded) > 0, loaded
         assert 'organization' in loaded[0]['$schema'], loaded[0]
 
+        loaded2 = list(graph.all('organization'))
+        assert len(loaded2) == len(self.data['organizations']), loaded2
+        assert len(loaded2) > 0, loaded2
+
     def test_buffered_load_data(self):
         graph = make_test_graph(buffered=True)
         ctx = graph.context()

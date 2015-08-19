@@ -1,12 +1,12 @@
 from rdflib import Graph, URIRef, RDF
 
 from jsongraph.vocab import BNode
-from jsongraph.binding import Binding
 from jsongraph.query import Query, QueryNode
 from jsongraph.provenance import Provenance
+from jsongraph.common import GraphOperations
 
 
-class Context(object):
+class Context(GraphOperations):
 
     def __init__(self, parent, identifier=None, prov=None):
         self.parent = parent
@@ -24,12 +24,6 @@ class Context(object):
             else:
                 self._graph = self.parent.graph.get_context(self.identifier)
         return self._graph
-
-    def get_binding(self, schema, data):
-        """ For a given schema, get a binding mediator providing links to the
-        RDF terms matching that schema. """
-        schema = self.parent.get_schema(schema)
-        return Binding(schema, self.parent.resolver, data=data)
 
     def _triplify_object(self, binding):
         """ Create bi-directional bindings for object relationships. """
@@ -108,52 +102,6 @@ class Context(object):
         """ Run a query using the jsongraph query dialect. This expects an
         input query, which can either be a dict or a list. """
         return Query(self, None, QueryNode(None, None, q))
-
-    def get(self, id, depth=3, schema=None):
-        """ Construct a single object based on its ID. """
-        uri = URIRef(id)
-        if schema is None:
-            for o in self.graph.objects(subject=uri, predicate=RDF.type):
-                schema = self.parent.get_schema(str(o))
-                if schema is not None:
-                    break
-        else:
-            schema = self.parent.get_schema(schema)
-        if schema is None:
-            return None
-        binding = self.get_binding(schema, None)
-        return self._objectify(uri, binding, depth=depth, path=set())
-
-    def all(self, schema_name, depth=3):
-        schema_uri = self.parent.get_uri(schema_name)
-        if schema_uri is None:
-            return
-        uri = URIRef(schema_uri)
-        for s in self.graph.subjects(object=uri, predicate=RDF.type):
-            yield self.get(s, depth=depth, schema=schema_uri)
-
-    def _objectify(self, node, binding, depth, path):
-        """ Given an RDF node URI (and it's associated schema), return an
-        object from the ``graph`` that represents the information available
-        about this node. """
-        if binding.is_object:
-            obj = {'$schema': binding.path}
-            for (s, p, o) in self.graph.triples((node, None, None)):
-                prop = binding.get_property(p)
-                if prop is None or depth <= 1 or o in path:
-                    continue
-                sub_path = path.union([node])
-                value = self._objectify(o, prop, depth - 1, sub_path)
-                if prop.is_array and prop.name in obj:
-                    obj[prop.name].extend(value)
-                else:
-                    obj[prop.name] = value
-            return obj
-        elif binding.is_array:
-            for item in binding.items:
-                return [self._objectify(node, item, depth, path)]
-        else:
-            return node.toPython()
 
     def __str__(self):
         return self.identifier
