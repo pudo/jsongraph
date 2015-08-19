@@ -35,6 +35,9 @@ class ContextTestCase(TestCase):
         for org in sorted(self.data['organizations']):
             ctx_id = ctx.add('organization', org)
             assert ctx_id is not None
+            assert sc() == 0, sc()
+            ctx.save()
+            assert sc() != 0, sc()
             ctx.delete()
             assert sc() == 0, sc()
             break

@@ -27,7 +27,8 @@ class Binding(SchemaVisitor):
 
     @property
     def predicate(self):
-        return URIRef(PRED[self.name])
+        name = self.schema.get('rdfName', self.name)
+        return URIRef(PRED[name])
 
     @property
     def reverse(self):
@@ -46,5 +47,6 @@ class Binding(SchemaVisitor):
                 self.schema.get('rdfType') == 'uri':
             return URIRef(uri.make_safe(self.data))
         if self.schema.get('rdfType') == 'id' and not uri.check(self.data):
-            return ID[self.data]
+            if not self.data.startswith(ID):
+                return ID[self.data]
         return Literal(self.data)

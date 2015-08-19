@@ -1,45 +1,10 @@
-from rdflib import Literal, URIRef
+from rdflib import URIRef
 from rdflib.namespace import RDF
 
-from jsongraph import uri
 from jsongraph.binding import Binding
-from jsongraph.vocab import BNode, PRED, ID
 
 
 class Converter(Binding):
-
-    def triplify(self):
-        """ Recursively generate RDF statement triples from the data and
-        schema supplied to the application. """
-        if self.data is None:
-            return
-
-        if self.is_object:
-            if self.uri:
-                self.graph.add((self.subject, RDF.type, self.uri))
-
-            if self.parent is not None:
-                parent = self.parent.subject
-                if self.parent.is_array:
-                    parent = self.parent.parent.subject
-                self.graph.add((parent, self.predicate, self.subject))
-                if self.reverse is not None:
-                    self.graph.add((self.subject, self.reverse, parent))
-
-            for prop in self.properties:
-                prop.triplify()
-
-            return self.subject
-
-        elif self.is_array:
-            for item in self.items:
-                item.triplify()
-
-        else:
-            subject = self.parent.subject
-            self.graph.add((subject, self.predicate, self.object))
-            if self.reverse is not None:
-                self.graph.add((self.object, self.reverse, subject))
 
     def objectify(self, node, depth=3, path=None):
         """ Given an RDF node URI (and it's associated schema), return an
@@ -70,13 +35,6 @@ class Converter(Binding):
     @property
     def graph(self):
         return self.state
-
-    @classmethod
-    def import_data(cls, resolver, graph, data, schema):
-        """ Given an object ``data`` and a JSON ``schema`` describing it, load
-        the given data into the ``graph`` as a set of RDF statements. """
-        obj = cls(schema, resolver, data=data, name=None, state=graph)
-        return obj.triplify()
 
     @classmethod
     def load_schema_uri(cls, resolver, graph, schema, uri, depth=3):

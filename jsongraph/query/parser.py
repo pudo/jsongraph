@@ -19,11 +19,10 @@ class QueryNode(object):
         if self.many:
             value = None if not len(value) else value[0]
 
-        self.optional, self.sort, self.assume = None, None, []
+        self.optional, self.sort = None, None
         if isinstance(value, dict):
             self.sort = value.pop('sort', None)
             self.optional = value.pop('optional', None)
-            self.assume = value.pop('assume', [])
             self.limit = value.pop('limit', 15)
             if not self.many:
                 self.limit = 1
@@ -48,12 +47,6 @@ class QueryNode(object):
     @property
     def root(self):
         return self.parent is None
-
-    @property
-    def assumed(self):
-        if self.root:
-            return self.assume
-        return self.parent.assumed + self.assume
 
     @property
     def forbidden(self):

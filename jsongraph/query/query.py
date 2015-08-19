@@ -46,7 +46,7 @@ class Query(object):
         level of the query. """
         q = q.project(self.var, append=True)
         for child in self.children:
-            if child.node.blank:
+            if child.node.blank and child.node.leaf:
                 q = child.project(q)
         return q
 
@@ -63,22 +63,19 @@ class Query(object):
         return q
 
     def query(self):
-        """ Compose the query by traversing all nodes and generating SPARQL.
-        """
+        """ Compose the query and generate SPARQL. """
         q = Select([])
         q = self.project(q)
         q = self.filter(q)
 
-        subq = Select([self.var])
-        subq = self.filter(subq)
         if self.parent is None:
+            subq = Select([self.var])
+            subq = self.filter(subq)
             subq = subq.offset(self.node.offset)
             subq = subq.limit(self.node.limit)
-        subq = subq.distinct()
-        q = q.where(subq)
-        if self.parent is None:
-            q = q.offset(self.node.offset)
-            q = q.limit(self.node.limit)
+            subq = subq.distinct()
+            q = q.where(subq)
+
         print 'QUERY', q.compile()
         return q
 
@@ -117,11 +114,9 @@ class Query(object):
     def run(self):
         res = self.query().execute(self.context.graph)
         for row in res:
-            print 'ROW', row
             data = {}
             for k, val in row.asdict().items():
                 data[k] = val.toPython()
-            print data
             self.collect(data)
         name, result = self.assemble()
         return result

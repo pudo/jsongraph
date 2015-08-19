@@ -5,6 +5,7 @@ from ..util import make_test_graph, fixture_file
 
 CTX = {}
 
+
 def get_context():
     if 'ctx' not in CTX:
         data = json.load(fixture_file('rdfconv/bt_partial.json'))
@@ -48,6 +49,6 @@ class ContextTestCase(TestCase):
             'contact_details': []
         }).results()
         assert res['status'] == 'ok'
-        # from pprint import pprint
-        # pprint(res)
-        # assert len(res['result']) > 0
+        from pprint import pprint
+        pprint(res)
+        assert len(res['result']) > 0
