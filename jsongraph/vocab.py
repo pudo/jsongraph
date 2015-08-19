@@ -2,9 +2,9 @@ from uuid import uuid4
 
 from rdflib import URIRef, Namespace
 
-PRED = Namespace('/data/fields/')
-META = Namespace('/meta/')
-ID = Namespace('/data/id/')
+PRED = Namespace('urn:fields:')
+META = Namespace('urn:meta:')
+ID = Namespace('urn:id:')
 
 
 def BNode():
