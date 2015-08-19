@@ -1,7 +1,8 @@
 from uuid import uuid4
 from time import time
+from collections import OrderedDict
 
-from rdflib import RDF, Literal
+from rdflib import RDF, Literal, URIRef
 from sparqlquery import Select, v, union, optional, func
 
 from jsongraph.vocab import ID, PRED
@@ -41,16 +42,18 @@ class Query(object):
             return PRED[self.node.name]
         return v['pred' + self.id]
 
-    def project(self, q):
+    def project(self, q, parent=False):
         """ Figure out which attributes should be returned for the current
         level of the query. """
         q = q.project(self.var, append=True)
+        if parent and self.parent:
+            q = q.project(self.parent.var, append=True)
         for child in self.children:
             if child.node.blank and child.node.leaf:
                 q = child.project(q)
         return q
 
-    def filter(self, q):
+    def filter(self, q, parents=None):
         """ Apply any filters to the query. """
         if self.node.leaf and self.node.filtered:
             q = q.where((self.parent.var,
@@ -58,19 +61,29 @@ class Query(object):
                          Literal(self.node.value)))
         elif self.parent is not None:
             q = q.where((self.parent.var, self.predicate, self.var))
+            if parents is not None:
+                parents = [URIRef(p) for p in parents]
+                q = q.filter(self.parent.var.in_(*parents))
         for child in self.children:
             q = child.filter(q)
         return q
 
-    def query(self):
+    def nested(self):
+        """ A list of all sub-entities for which separate queries will
+        be conducted. """
+        for child in self.children:
+            if child.node.nested:
+                yield child
+
+    def query(self, parents=None):
         """ Compose the query and generate SPARQL. """
         q = Select([])
-        q = self.project(q)
-        q = self.filter(q)
+        q = self.project(q, parent=True)
+        q = self.filter(q, parents=parents)
 
         if self.parent is None:
             subq = Select([self.var])
-            subq = self.filter(subq)
+            subq = self.filter(subq, parents=parents)
             subq = subq.offset(self.node.offset)
             subq = subq.limit(self.node.limit)
             subq = subq.distinct()
@@ -79,47 +92,54 @@ class Query(object):
         print 'QUERY', q.compile()
         return q
 
-    def collect(self, row):
-        parent = None
-        if self.parent:
-            parent = row.get(self.parent.id)
+    def execute(self, parents=None):
+        """ Run the data query and construct entities from it's results. """
+        results = OrderedDict()
+        for row in self.query(parents=parents).execute(self.context.graph):
+            data = {k: v.toPython() for (k, v) in row.asdict().items()}
+            id = data.get(self.id)
+            if id not in results:
+                results[id] = {}
+                if self.parent is not None:
+                    results[id]['$parent'] = data.get(self.parent.id)
 
-        name = self.node.name
-        value = row.get(self.id)
-        self._results.append((parent, name, value))
+            for child in self.children:
+                if child.id in data:
+                    name = child.node.name
+                    value = data.get(child.id)
+                    if child.node.many:
+                        if name not in results[id]:
+                            results[id][name] = [value]
+                        else:
+                            results[id][name].append(value)
+                    else:
+                        results[id][name] = value
+        return results
 
-        for child in self.children:
-            child.collect(row)
-
-    def assemble(self, parent_id=None):
-        items = []
-        name = None
-        for (parent, name, value) in self._results:
-            if parent != parent_id:
-                continue
-
-            if self.node.leaf:
-                items.append(value)
-            else:
-                data = {}
-                for child in self.children:
-                    name, out = child.assemble(parent_id=value)
-                    data[name] = out
-                items.append(data)
-
-        if not self.node.many:
-            items = items.pop() if len(items) else None
-        return name, items
+    def collect(self, parents=None):
+        """ Given re-constructed entities, conduct queries for child
+        entities and merge them into the current level's object graph. """
+        results = self.execute(parents=parents)
+        ids = results.keys()
+        for child in self.nested():
+            name = child.node.name
+            for child_data in child.collect(parents=ids).values():
+                parent_id = child_data.pop('$parent', None)
+                if child.node.many:
+                    if name not in results[parent_id]:
+                        results[parent_id][name] = []
+                    results[parent_id][name].append(child_data)
+                else:
+                    results[parent_id][name] = child_data
+        return results
 
     def run(self):
-        res = self.query().execute(self.context.graph)
-        for row in res:
-            data = {}
-            for k, val in row.asdict().items():
-                data[k] = val.toPython()
-            self.collect(data)
-        name, result = self.assemble()
-        return result
+        results = []
+        for result in self.collect().values():
+            if not self.node.many:
+                return result
+            results.append(result)
+        return results
 
     def results(self):
         t = time()

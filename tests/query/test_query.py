@@ -49,6 +49,21 @@ class ContextTestCase(TestCase):
             'contact_details': []
         }).results()
         assert res['status'] == 'ok'
-        from pprint import pprint
-        pprint(res)
+        # from pprint import pprint
+        # pprint(res)
         assert len(res['result']) > 0
+
+    def test_query_multiple(self):
+        context = get_context()
+        q = [{'id': None, 'limit': 2, 'memberships': [{'id': None, 'organization': {'name': None}}]}]
+        res = context.query(q).results()
+        assert res['status'] == 'ok'
+        assert len(res['result']) == 2, res
+        res = res['result'][0]
+        assert 'id' in res, res
+        assert 'memberships' in res, res
+        assert isinstance(res['memberships'], list), res
+        assert 'id' in res['memberships'][0], res
+        # from pprint import pprint
+        # pprint(res)
+        # assert False
