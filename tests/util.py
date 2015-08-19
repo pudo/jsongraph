@@ -39,7 +39,12 @@ resolver = create_resolver()
 
 def make_test_graph(buffered=False):
     from jsongraph.graph import Graph
-    graph = Graph(resolver=resolver, buffered=buffered)
+    from jsongraph.util import sparql_store
+    store = None
+    if 'JSONGRAPH_TEST_SPARQL_QUERY' in os.environ:
+        store = sparql_store(os.environ.get('JSONGRAPH_TEST_SPARQL_QUERY'),
+                             os.environ.get('JSONGRAPH_TEST_SPARQL_UPDATE'))
+    graph = Graph(store=store, resolver=resolver, buffered=buffered)
     graph.register('person', PERSON_URI)
     graph.register('organization', ORG_URI)
     return graph
