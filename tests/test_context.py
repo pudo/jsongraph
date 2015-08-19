@@ -20,10 +20,31 @@ class ContextTestCase(TestCase):
         sc = lambda: len(list(graph.graph.triples((None, None, None))))
 
         for org in sorted(self.data['organizations']):
-            ctx_id = ctx.add('organization', org)
-            assert ctx_id is not None
+            org_id = ctx.add('organization', org)
+            assert org_id is not None
+
+            obj = ctx.get(org_id, schema='organization')
+            assert obj['name'] == org['name'], obj
+            obj = ctx.get(org_id)
+            assert obj['name'] == org['name'], obj
+            obj = ctx.get(org_id, schema='foo')
+            assert obj is None, obj
+
             ctx.delete()
             assert sc() == 0, sc()
+
+    def test_read_all(self):
+        graph = make_test_graph()
+        ctx = graph.context()
+
+        for org in sorted(self.data['organizations']):
+            ctx.add('organization', org)
+
+        ctx.save()
+        loaded = list(ctx.all('organization'))
+        assert len(loaded) == len(self.data['organizations']), loaded
+        assert len(loaded) > 0, loaded
+        assert 'organization' in loaded[0]['$schema'], loaded[0]
 
     def test_buffered_load_data(self):
         graph = make_test_graph(buffered=True)
@@ -33,8 +54,8 @@ class ContextTestCase(TestCase):
         sc = lambda: len(list(graph.graph.triples((None, None, None))))
 
         for org in sorted(self.data['organizations']):
-            ctx_id = ctx.add('organization', org)
-            assert ctx_id is not None
+            org_id = ctx.add('organization', org)
+            assert org_id is not None
             assert sc() == 0, sc()
             ctx.save()
             assert sc() != 0, sc()
