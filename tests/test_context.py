@@ -50,6 +50,9 @@ class ContextTestCase(TestCase):
         assert len(loaded2) == len(self.data['organizations']), loaded2
         assert len(loaded2) > 0, loaded2
 
+        loaded3 = list(graph.all('foo'))
+        assert not len(loaded3)
+
     def test_buffered_load_data(self):
         graph = make_test_graph(buffered=True)
         ctx = graph.context()

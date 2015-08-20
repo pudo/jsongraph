@@ -1,4 +1,5 @@
 from rdflib import URIRef, RDF
+from sparqlquery import Select, v, desc
 
 from jsongraph.binding import Binding
 
@@ -32,8 +33,11 @@ class GraphOperations(object):
         if schema_uri is None:
             return
         uri = URIRef(schema_uri)
-        for s in self.graph.subjects(object=uri, predicate=RDF.type):
-            yield self.get(s, depth=depth, schema=schema_uri)
+        var = v['uri']
+        q = Select([var]).where((var, RDF.type, uri))
+        q = q.order_by(desc(var))
+        for data in q.execute(self.graph):
+            yield self.get(data['uri'], depth=depth, schema=schema_uri)
 
     def _objectify(self, node, binding, depth, path):
         """ Given an RDF node URI (and it's associated schema), return an
