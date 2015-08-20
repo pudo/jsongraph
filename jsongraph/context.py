@@ -64,6 +64,7 @@ class Context(GraphOperations):
         """ Stage ``data`` as a set of statements, based on the given
         ``schema`` definition. """
         binding = self.get_binding(schema, data)
+        # TODO: what a lovely place to validate some data.
         return self._triplify(binding)
 
     def save(self):

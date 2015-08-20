@@ -3,9 +3,10 @@ from time import time
 from collections import OrderedDict
 
 from rdflib import RDF, Literal, URIRef
-from sparqlquery import Select, v, union, optional, func
+from sparqlquery import Select, v, union, optional, func, desc
 
 from jsongraph.vocab import ID, PRED
+from jsongraph.query.util import OP_EQ, OP_NOT, OP_IN, OP_NIN, OP_LIKE
 
 
 class Query(object):
@@ -49,21 +50,41 @@ class Query(object):
         if parent and self.parent:
             q = q.project(self.parent.var, append=True)
         for child in self.children:
-            if child.node.blank and child.node.leaf:
+            if child.node.leaf:
                 q = child.project(q)
+        return q
+
+    def filter_value(self, q, var):
+        if self.node.op == OP_EQ:
+            q = q.filter(var == Literal(self.node.value))
+        elif self.node.op == OP_NOT:
+            q = q.filter(var != Literal(self.node.value))
+        elif self.node.op == OP_IN:
+            q = q.filter(var.in_(*[Literal(d) for d in self.node.data]))
+        elif self.node.op == OP_NIN:
+            q = q.filter(var.not_in(*[Literal(d) for d in self.node.data]))
+        elif self.node.op == OP_LIKE:
+            regex = '.*%s.*' % self.node.value
+            q = q.filter(func.regex(var, regex, 'i'))
         return q
 
     def filter(self, q, parents=None):
         """ Apply any filters to the query. """
         if self.node.leaf and self.node.filtered:
+            # TODO: subject filters?
             q = q.where((self.parent.var,
                          self.predicate,
-                         Literal(self.node.value)))
+                         self.var))
+            # TODO: inverted nodes
+            q = self.filter_value(q, self.var)
         elif self.parent is not None:
             q = q.where((self.parent.var, self.predicate, self.var))
+
             if parents is not None:
                 parents = [URIRef(p) for p in parents]
                 q = q.filter(self.parent.var.in_(*parents))
+
+        # TODO: forbidden nodes.
         for child in self.children:
             q = child.filter(q)
         return q
@@ -77,6 +98,7 @@ class Query(object):
 
     def query(self, parents=None):
         """ Compose the query and generate SPARQL. """
+        # TODO: benchmark single-query strategy
         q = Select([])
         q = self.project(q, parent=True)
         q = self.filter(q, parents=parents)
@@ -87,10 +109,24 @@ class Query(object):
             subq = subq.offset(self.node.offset)
             subq = subq.limit(self.node.limit)
             subq = subq.distinct()
+            # TODO: sorting.
+            subq = subq.order_by(desc(self.var))
             q = q.where(subq)
 
         print 'QUERY', q.compile()
         return q
+
+    def base_object(self, data):
+        """ Make sure to return all the existing filter fields
+        for query results. """
+        obj = {'id': data.get(self.id)}
+        if self.parent is not None:
+            obj['$parent'] = data.get(self.parent.id)
+
+        # for child in self.children:
+        #     #if not self.node.blank:
+        #         obj[child.node.name] = child.node.data
+        return obj
 
     def execute(self, parents=None):
         """ Run the data query and construct entities from it's results. """
@@ -99,15 +135,13 @@ class Query(object):
             data = {k: v.toPython() for (k, v) in row.asdict().items()}
             id = data.get(self.id)
             if id not in results:
-                results[id] = {}
-                if self.parent is not None:
-                    results[id]['$parent'] = data.get(self.parent.id)
+                results[id] = self.base_object(data)
 
             for child in self.children:
                 if child.id in data:
                     name = child.node.name
                     value = data.get(child.id)
-                    if child.node.many:
+                    if child.node.many and not child.node.op in [OP_IN, OP_NIN]:
                         if name not in results[id]:
                             results[id][name] = [value]
                         else:

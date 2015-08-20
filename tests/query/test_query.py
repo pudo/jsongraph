@@ -55,7 +55,9 @@ class ContextTestCase(TestCase):
 
     def test_query_multiple(self):
         context = get_context()
-        q = [{'id': None, 'limit': 2, 'memberships': [{'id': None, 'organization': {'name': None}}]}]
+        q = [{'id': None, 'limit': 2, 'memberships': [
+            {'id': None, 'organization': {'name': None}}
+        ]}]
         res = context.query(q).results()
         assert res['status'] == 'ok'
         assert len(res['result']) == 2, res
@@ -67,3 +69,52 @@ class ContextTestCase(TestCase):
         # from pprint import pprint
         # pprint(res)
         # assert False
+
+    def test_query_simple_filter(self):
+        context = get_context()
+        q = [{'id': None, 'limit': 10, 'name': 'CSU'}]
+        res = context.query(q).results()
+        assert res['status'] == 'ok'
+        assert len(res['result']) == 1, res
+        res0 = res['result'][0]
+        assert res0['name'] == 'CSU', res
+        assert 'csu' in res0['id'], res
+
+    def test_query_negative_filter(self):
+        context = get_context()
+        q = [{'id': None, 'limit': 10, 'name!=': 'CSU'}]
+        res = context.query(q).results()
+        assert res['status'] == 'ok'
+        assert len(res['result']) > 1, res
+        for rec in res['result']:
+            assert rec['name'] != 'CSU', res
+            assert 'csu' not in rec['id'], res
+
+    def test_query_regex_filter(self):
+        context = get_context()
+        q = [{'id': None, 'limit': 10, 'name~=': '90'}]
+        res = context.query(q).results()
+        assert res['status'] == 'ok'
+        assert len(res['result']) == 1, res
+        for rec in res['result']:
+            assert '90' in rec['name'], rec
+
+    def test_query_list_filter(self):
+        context = get_context()
+        items = ['SPD', 'CSU']
+        q = [{'id': None, 'limit': 10, 'name|=': items}]
+        res = context.query(q).results()
+        assert res['status'] == 'ok'
+        assert len(res['result']) == 2, res
+        for rec in res['result']:
+            assert rec['name'] in items, rec
+
+    def test_query_negative_list_filter(self):
+        context = get_context()
+        items = ['SPD', 'CSU']
+        q = [{'id': None, 'limit': 1000, 'name|!=': items}]
+        res = context.query(q).results()
+        assert res['status'] == 'ok'
+        assert len(res['result']) > 2, res
+        for rec in res['result']:
+            assert rec['name'] not in items, rec
