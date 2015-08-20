@@ -4,9 +4,10 @@ from collections import OrderedDict
 
 from rdflib import RDF, Literal, URIRef
 from sparqlquery import Select, v, func, desc
+from mqlparser import OP_EQ, OP_NOT, OP_IN, OP_NIN, OP_LIKE
+from mqlparser import QueryNode  # noqa
 
 from jsongraph.vocab import PRED
-from jsongraph.query.util import OP_EQ, OP_NOT, OP_IN, OP_NIN, OP_LIKE
 
 
 class Query(object):

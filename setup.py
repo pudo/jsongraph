@@ -31,6 +31,7 @@ setup(
     test_suite='nose.collector',
     install_requires=[
         'jsonmapping',
+        'mqlparser',
         'jsonschema',
         'rdflib',
         'sparqlquery',

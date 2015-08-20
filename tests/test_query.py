@@ -1,7 +1,7 @@
 import json
 from unittest import TestCase
 
-from ..util import make_test_graph, fixture_file
+from .util import make_test_graph, fixture_file
 
 CTX = {}
 
