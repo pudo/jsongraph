@@ -80,5 +80,5 @@ class ContextTestCase(TestCase):
         ctx.save()
         ctx2 = graph.context(identifier=ctx.identifier)
         assert ctx is not ctx2, (ctx, ctx2)
-        assert ctx.meta.data['created_at'] == ctx2.meta.data['created_at'], \
-            (ctx.meta.data, ctx2.meta.data)
+        assert ctx.meta['created_at'] == ctx2.meta['created_at'], \
+            (ctx.meta, ctx2.meta)

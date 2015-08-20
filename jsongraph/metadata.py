@@ -1,4 +1,5 @@
 from datetime import datetime
+from collections import MutableMapping
 
 from rdflib import Literal
 from rdflib.namespace import RDF
@@ -6,7 +7,7 @@ from rdflib.namespace import RDF
 from jsongraph.vocab import META
 
 
-class MetaData(object):
+class MetaData(MutableMapping):
     """ This object retains information on the origin and trustworthiness of
     a particular subset of the data. """
 
@@ -39,3 +40,18 @@ class MetaData(object):
             if pat in self.context.graph:
                 self.context.graph.remove(pat)
             self.context.graph.add((pat[0], META[name], Literal(value)))
+
+    def __delitem__(self, item):
+        del self.data[item]
+
+    def __getitem__(self, item):
+        return self.data[item]
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __len__(self):
+        return len(self.data)
+
+    def __setitem__(self, item, value):
+        self.data[item] = value

@@ -15,4 +15,6 @@ class MetaDataTestCase(TestCase):
     def test_basic_context(self):
         data = {'source_url': 'http://pudo.org'}
         ctx = self.graph.context(meta=data)
-        assert 'pudo.org' in ctx.meta.data.get('source_url')
+        assert 'pudo.org' in ctx.meta.get('source_url')
+        ctx.meta['label'] = 'Banana'
+        assert 'label' in ctx.meta

@@ -71,7 +71,6 @@ class Context(GraphOperations):
     def save(self):
         """ Transfer the statements in this context over to the main store. """
         if not self.parent.buffered:
-            self.graph.remove((self.identifier, None, None))
             self.meta.generate()
         else:
             query = """
