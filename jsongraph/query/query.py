@@ -3,9 +3,9 @@ from time import time
 from collections import OrderedDict
 
 from rdflib import RDF, Literal, URIRef
-from sparqlquery import Select, v, union, optional, func, desc
+from sparqlquery import Select, v, func, desc
 
-from jsongraph.vocab import ID, PRED
+from jsongraph.vocab import PRED
 from jsongraph.query.util import OP_EQ, OP_NOT, OP_IN, OP_NIN, OP_LIKE
 
 
@@ -122,10 +122,6 @@ class Query(object):
         obj = {'id': data.get(self.id)}
         if self.parent is not None:
             obj['$parent'] = data.get(self.parent.id)
-
-        # for child in self.children:
-        #     #if not self.node.blank:
-        #         obj[child.node.name] = child.node.data
         return obj
 
     def execute(self, parents=None):
@@ -141,7 +137,8 @@ class Query(object):
                 if child.id in data:
                     name = child.node.name
                     value = data.get(child.id)
-                    if child.node.many and not child.node.op in [OP_IN, OP_NIN]:
+                    if child.node.many and \
+                            child.node.op not in [OP_IN, OP_NIN]:
                         if name not in results[id]:
                             results[id][name] = [value]
                         else:
