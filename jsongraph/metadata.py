@@ -6,7 +6,7 @@ from rdflib.namespace import RDF
 from jsongraph.vocab import META
 
 
-class Provenance(object):
+class MetaData(object):
     """ This object retains information on the origin and trustworthiness of
     a particular subset of the data. """
 

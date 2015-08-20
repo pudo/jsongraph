@@ -1,21 +1,21 @@
 from rdflib import Graph, URIRef, RDF
-from jsonschema import validate
+# from jsonschema import validate
 
 from jsongraph.vocab import BNode
 from jsongraph.query import Query, QueryNode
-from jsongraph.provenance import Provenance
+from jsongraph.metadata import MetaData
 from jsongraph.common import GraphOperations
 
 
 class Context(GraphOperations):
 
-    def __init__(self, parent, identifier=None, prov=None):
+    def __init__(self, parent, identifier=None, meta=None):
         self.parent = parent
         if identifier is None:
             identifier = BNode()
         self.identifier = URIRef(identifier)
-        self.prov = Provenance(self, prov)
-        self.prov.generate()
+        self.meta = MetaData(self, meta)
+        self.meta.generate()
 
     @property
     def graph(self):
@@ -72,7 +72,7 @@ class Context(GraphOperations):
         """ Transfer the statements in this context over to the main store. """
         if not self.parent.buffered:
             self.graph.remove((self.identifier, None, None))
-            self.prov.generate()
+            self.meta.generate()
         else:
             query = """
                 DELETE WHERE { GRAPH %s { %s ?pred ?val } } ;
