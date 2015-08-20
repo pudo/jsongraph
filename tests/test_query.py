@@ -118,3 +118,24 @@ class ContextTestCase(TestCase):
         assert len(res['result']) > 2, res
         for rec in res['result']:
             assert rec['name'] not in items, rec
+
+    def test_query_wildcard_fields(self):
+        context = get_context()
+        q = [{'*': None, '$schema': 'person', 'limit': 10}]
+        res = context.query(q).results()
+        assert res['status'] == 'ok'
+        assert len(res['result']) == 10, res
+        for rec in res['result']:
+            assert 'id' in rec, rec
+            assert 'name' in rec, rec
+            assert '$schema' in rec, rec
+            assert 'limit' not in rec, rec
+            # from pprint import pprint
+            # pprint(res)
+            # assert False
+
+        q = [{'*': None, 'limit': 10}]
+        res = context.query(q).results()
+        for rec in res['result']:
+            assert '$schema' in rec, rec
+            assert 'limit' not in rec, rec

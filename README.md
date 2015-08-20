@@ -17,12 +17,14 @@ This is what using the library should look like in an ideal scenario:
 from jsongraph import Graph
 
 graph = Graph(base_uri='file:///path/to/schema/files')
+graph.register('person', 'person_schema.json')
 context = graph.context()
-context.add('person_schema.json', data)
+context.add('person', data)
 
-uri = 'urn:prod'
-graph.consolidate(uri)
-res = graph.query([{"name": None, "limit": 5}])
+context = graph.consolidate('urn:prod')
+# Metaweb-style queries:
+for item in context.query([{"name": None, "limit": 5}]):
+    print item['name']
 ```
 
 ## Design

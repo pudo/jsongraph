@@ -2,6 +2,7 @@ from uuid import uuid4
 from time import time
 from collections import OrderedDict
 
+from normality import slugify
 from rdflib import RDF, Literal, URIRef
 from sparqlquery import Select, v, func, desc
 from mqlparser import OP_EQ, OP_NOT, OP_IN, OP_NIN, OP_LIKE
@@ -24,7 +25,8 @@ class Query(object):
             self.id = 'root'
         else:
             prefix = '_any' if node.name == '*' else node.name
-            self.id = '%s_%s' % (prefix, uuid4().hex[:10])
+            id = '%s_%s' % (prefix, uuid4().hex[:5])
+            self.id = slugify(id, '_')
         self.var = v[self.id]
 
     @property
@@ -37,12 +39,28 @@ class Query(object):
         return self._children
 
     @property
+    def predicate_var(self):
+        return 'pred_' + self.id
+
+    @property
     def predicate(self):
         if self.node.name == '$schema':
             return RDF.type
         if self.node.specific_attribute:
             return PRED[self.node.name]
-        return v['pred' + self.id]
+        return v[self.predicate_var]
+
+    def get_name(self, data):
+        """ For non-specific queries, this will return the actual name in the
+        result. """
+        if self.node.specific_attribute:
+            return self.node.name
+        name = data.get(self.predicate_var)
+        if str(RDF.type) in [self.node.name, name]:
+            return '$schema'
+        if name.startswith(PRED):
+            name = name[len(PRED):]
+        return name
 
     def project(self, q, parent=False):
         """ Figure out which attributes should be returned for the current
@@ -50,20 +68,29 @@ class Query(object):
         q = q.project(self.var, append=True)
         if parent and self.parent:
             q = q.project(self.parent.var, append=True)
+        if not self.node.specific_attribute:
+            q = q.project(self.predicate, append=True)
         for child in self.children:
             if child.node.leaf:
                 q = child.project(q)
         return q
 
+    def convert(self, val):
+        # deref $schema:
+        if self.node.name == '$schema':
+            return URIRef(self.context.parent.get_uri(val))
+        return Literal(val)
+
     def filter_value(self, q, var):
         if self.node.op == OP_EQ:
-            q = q.filter(var == Literal(self.node.value))
+            q = q.filter(var == self.convert(self.node.value))
         elif self.node.op == OP_NOT:
-            q = q.filter(var != Literal(self.node.value))
+            q = q.filter(var != self.convert(self.node.value))
         elif self.node.op == OP_IN:
-            q = q.filter(var.in_(*[Literal(d) for d in self.node.data]))
+            q = q.filter(var.in_(*[self.convert(d) for d in self.node.data]))
         elif self.node.op == OP_NIN:
-            q = q.filter(var.not_in(*[Literal(d) for d in self.node.data]))
+            exp = var.not_in(*[self.convert(d) for d in self.node.data])
+            q = q.filter(exp)
         elif self.node.op == OP_LIKE:
             regex = '.*%s.*' % self.node.value
             q = q.filter(func.regex(var, regex, 'i'))
@@ -136,7 +163,7 @@ class Query(object):
 
             for child in self.children:
                 if child.id in data:
-                    name = child.node.name
+                    name = child.get_name(data)
                     value = data.get(child.id)
                     if child.node.many and \
                             child.node.op not in [OP_IN, OP_NIN]:
