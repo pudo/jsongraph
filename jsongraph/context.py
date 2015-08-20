@@ -1,4 +1,5 @@
 from rdflib import Graph, URIRef, RDF
+from jsonschema import validate
 
 from jsongraph.vocab import BNode
 from jsongraph.query import Query, QueryNode
@@ -64,7 +65,7 @@ class Context(GraphOperations):
         """ Stage ``data`` as a set of statements, based on the given
         ``schema`` definition. """
         binding = self.get_binding(schema, data)
-        # TODO: what a lovely place to validate some data.
+        # validate(data, binding.schema)
         return self._triplify(binding)
 
     def save(self):
