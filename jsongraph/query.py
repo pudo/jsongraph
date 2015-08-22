@@ -1,3 +1,4 @@
+import logging
 from uuid import uuid4
 from time import time
 from collections import OrderedDict
@@ -9,6 +10,8 @@ from mqlparser import OP_EQ, OP_NOT, OP_IN, OP_NIN, OP_LIKE
 from mqlparser import QueryNode  # noqa
 
 from jsongraph.vocab import PRED
+
+log = logging.getLogger(__name__)
 
 
 class Query(object):
@@ -141,7 +144,7 @@ class Query(object):
             subq = subq.order_by(desc(self.var))
             q = q.where(subq)
 
-        print 'QUERY', q.compile()
+        log.info("Compiled query: %r", q.compile())
         return q
 
     def base_object(self, data):
@@ -203,9 +206,11 @@ class Query(object):
     def results(self):
         t = time()
         result = self.run()
+        t = (time() - t) * 1000
+        log.debug("Completed: %sms", t)
         return {
             'status': 'ok',
             'query': self.node.to_dict(),
             'result': result,
-            'time': (time() - t) * 1000
+            'time': t
         }
