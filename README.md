@@ -60,9 +60,9 @@ When working with ``jsongraph``, a user will first load data into a variety of
 ``Contexts``. They can then generate a consolidated version of the data, in a
 separate ``Context``.
 
-This consolidated version applies entity de-duplication and for each property
-of each stored object, only the information from the most trust worthy source
-``Context`` will be chosen.
+This consolidated version applies entity de-duplication. For object properties
+with multiple available values across several ``Contexts``, the information
+from the most trustworthy ``Context`` will be chosen.
 
 ### Queries
 
