@@ -60,7 +60,7 @@ class Graph(GraphOperations):
     @property
     def buffered(self):
         if self._buffered is None:
-            self._buffered = isinstance(self.store, (Memory, IOMemory))
+            return not isinstance(self.store, (Memory, IOMemory))
         return self._buffered
 
     def context(self, identifier=None, meta=None):

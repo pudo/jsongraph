@@ -70,19 +70,16 @@ class Context(GraphOperations):
 
     def save(self):
         """ Transfer the statements in this context over to the main store. """
-        if not self.parent.buffered:
-            self.meta.generate()
-        else:
+        if self.parent.buffered:
             query = """
-                DELETE WHERE { GRAPH %s { %s ?pred ?val } } ;
                 INSERT DATA { GRAPH %s { %s } }
             """
             query = query % (self.identifier.n3(),
-                             self.identifier.n3(),
-                             self.identifier.n3(),
                              self.graph.serialize(format='nt'))
             self.parent.graph.update(query)
             self.flush()
+        else:
+            self.meta.generate()
 
     def delete(self):
         """ Delete all statements matching the current context identifier
