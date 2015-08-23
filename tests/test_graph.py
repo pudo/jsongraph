@@ -26,6 +26,13 @@ class RegistryTestCase(TestCase):
         self.graph.register('membership', MEM_URI)
         assert 'membership' in self.graph.aliases
 
+        data = {"id": 'http://foo.bar'}
+        self.graph.register('bar', data)
+        assert self.graph.get_uri('bar') == data['id'], \
+            self.graph.get_uri('bar')
+        assert self.graph.get_schema('bar') == data, \
+            self.graph.get_schema('bar')
+
     def test_get_uri(self):
         assert self.graph.resolver == resolver, self.graph
         assert 'person' in self.graph.aliases
