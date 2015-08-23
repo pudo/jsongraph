@@ -1,22 +1,30 @@
 from rdflib import URIRef, plugin, ConjunctiveGraph
 from rdflib.store import Store
 from rdflib.plugins.memory import Memory, IOMemory
-from jsonschema import RefResolver
+from jsonschema import RefResolver, ValidationError
 
 from jsongraph.context import Context
+from jsongraph.config import config_validator
 from jsongraph.common import GraphOperations
+from jsongraph.util import sparql_store, GraphException
 
 
 class Graph(GraphOperations):
     """ Registry for assigning names aliases to certain schemata. """
 
-    def __init__(self, base_uri=None, resolver=None, aliases=None,
-                 store=None, buffered=None):
+    def __init__(self, base_uri=None, resolver=None, config=None):
+        self.config = config or {}
+        try:
+            config_validator.validate(self.config)
+        except ValidationError as ve:
+            raise GraphException("Invalid config: %r" % ve)
         self._resolver = resolver
         self._base_uri = base_uri
-        self._store = store
-        self._buffered = buffered
-        self.aliases = aliases or {}
+        self._store = None
+        self._buffered = None
+        self.aliases = {}
+        for alias, schema in self.config.get('schemas', {}).items():
+            self.register(alias, schema)
 
     @property
     def parent(self):
@@ -39,6 +47,8 @@ class Graph(GraphOperations):
         file or HTTP-based resolution base URI. """
         if self._resolver is None:
             self._resolver = RefResolver(self.base_uri, {})
+        # if self.base_uri not in self._resolver.store:
+        #    self._resolver.store[self.base_uri] = self.config
         return self._resolver
 
     @property
@@ -46,7 +56,13 @@ class Graph(GraphOperations):
         """ Backend storage for RDF data. Either an in-memory store, or an
         external triple store controlled via SPARQL. """
         if self._store is None:
-            self._store = plugin.get('IOMemory', Store)()
+            config = self.config.get('store', {})
+            print 'CONFIG', config
+            if 'query' in config and 'update' in config:
+                self._store = sparql_store(config.get('query'),
+                                           config.get('update'))
+            else:
+                self._store = plugin.get('IOMemory', Store)()
         return self._store
 
     @property
@@ -59,9 +75,11 @@ class Graph(GraphOperations):
 
     @property
     def buffered(self):
-        if self._buffered is None:
+        """ Whether write operations should be buffered, i.e. run against a
+        local graph before being stored to the main data store. """
+        if 'buffered' not in self.config:
             return not isinstance(self.store, (Memory, IOMemory))
-        return self._buffered
+        return self.config.get('buffered')
 
     def context(self, identifier=None, meta=None):
         """ Get or create a context, with the given identifier and/or
@@ -85,6 +103,7 @@ class Graph(GraphOperations):
             return self.aliases[alias]
         if alias in self.aliases.values():
             return alias
+        raise GraphException('No such schema: %r' % alias)
 
     def get_schema(self, alias):
         """ Actually resolve the schema for the given alias/URI. """
@@ -92,7 +111,7 @@ class Graph(GraphOperations):
             return alias
         uri = self.get_uri(alias)
         if uri is None:
-            return None
+            raise GraphException('No such schema: %r' % alias)
         uri, schema = self.resolver.resolve(uri)
         return schema
 

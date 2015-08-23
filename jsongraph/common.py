@@ -23,15 +23,11 @@ class GraphOperations(object):
                     break
         else:
             schema = self.parent.get_schema(schema)
-        if schema is None:
-            return None
         binding = self.get_binding(schema, None)
         return self._objectify(uri, binding, depth=depth, path=set())
 
     def all(self, schema_name, depth=3):
         schema_uri = self.parent.get_uri(schema_name)
-        if schema_uri is None:
-            return
         uri = URIRef(schema_uri)
         var = v['uri']
         q = Select([var]).where((var, RDF.type, uri))

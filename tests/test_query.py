@@ -12,9 +12,9 @@ def get_context():
         graph = make_test_graph()
         context = graph.context()
         for org in sorted(data['organizations']):
-            context.add('organization', org)
+            context.add('organizations', org)
         for per in sorted(data['persons']):
-            context.add('person', per)
+            context.add('persons', per)
         CTX['ctx'] = context
     return CTX['ctx']
 
@@ -121,7 +121,7 @@ class ContextTestCase(TestCase):
 
     def test_query_wildcard_fields(self):
         context = get_context()
-        q = [{'*': None, '$schema': 'person', 'limit': 10}]
+        q = [{'*': None, '$schema': 'persons', 'limit': 10}]
         res = context.query(q).results()
         assert res['status'] == 'ok'
         assert len(res['result']) == 10, res

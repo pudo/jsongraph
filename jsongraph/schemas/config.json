@@ -1,0 +1,37 @@
+{
+    "id": "http://pudo.github.io/graphkit/config.yaml",
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "GraphKit Configuration",
+    "properties": {
+        "store": {
+            "type": "object",
+            "properties": {
+                "query": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "update": {
+                    "type": "string",
+                    "format": "uri"
+                }
+            },
+            "required": ["query", "update"]
+        },
+        "schemas": {
+            "type": "object",
+            "patternProperties": {
+                "[A-Za-z][A-Za-z0-9_]*[A-Za-z0-9]": {
+                    "oneOf": [
+                        {
+                            "type": "string",
+                            "format": "uri"
+                        },
+                        {
+                            "$ref": "http://json-schema.org/draft-04/schema#"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

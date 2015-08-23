@@ -1,7 +1,7 @@
 
 test: install
 	@rm -rf **/*.pyc
-	@pyenv/bin/nosetests --with-coverage --cover-package=jsongraph --cover-erase
+	@pyenv/bin/nosetests --with-coverage --cover-package=jsongraph --cover-erase -x
 
 install: pyenv/bin/python
 
