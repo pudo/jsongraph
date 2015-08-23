@@ -94,3 +94,16 @@ class ContextTestCase(TestCase):
         assert ctx is not ctx2, (ctx, ctx2)
         assert ctx.meta['created_at'] == ctx2.meta['created_at'], \
             (ctx.meta, ctx2.meta)
+
+    def test_delete_all_data(self):
+        graph = make_test_graph()
+        ctx = graph.context(meta={'source': 'blah'})
+        for org in sorted(self.data['organizations']):
+            ctx.add('organizations', org)
+            break
+        sc = lambda: len(list(graph.graph.triples((None, None, None))))
+        assert sc() != 0, sc()
+        graph.clear(context='foo')
+        assert sc() != 0, sc()
+        graph.clear()
+        assert sc() == 0, sc()

@@ -1,3 +1,5 @@
+import logging
+
 from rdflib import URIRef, plugin, ConjunctiveGraph
 from rdflib.store import Store
 from rdflib.plugins.memory import Memory, IOMemory
@@ -7,6 +9,8 @@ from jsongraph.context import Context
 from jsongraph.config import config_validator
 from jsongraph.common import GraphOperations
 from jsongraph.util import sparql_store, GraphException
+
+log = logging.getLogger(__name__)
 
 
 class Graph(GraphOperations):
@@ -62,6 +66,7 @@ class Graph(GraphOperations):
                                            config.get('update'))
             else:
                 self._store = plugin.get('IOMemory', Store)()
+            log.debug('Created store: %r', self._store)
         return self._store
 
     @property
@@ -113,6 +118,14 @@ class Graph(GraphOperations):
             raise GraphException('No such schema: %r' % alias)
         uri, schema = self.resolver.resolve(uri)
         return schema
+
+    def clear(self, context=None):
+        """ Delete all data from the graph. """
+        context = URIRef(context).n3() if context is not None else '?g'
+        query = """
+            DELETE { GRAPH %s { ?s ?p ?o } } WHERE { GRAPH %s { ?s ?p ?o } }
+        """ % (context, context)
+        self.parent.graph.update(query)
 
     def __str__(self):
         return self.base_uri

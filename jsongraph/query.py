@@ -144,7 +144,9 @@ class Query(object):
             subq = subq.order_by(desc(self.var))
             q = q.where(subq)
 
-        log.info("Compiled query: %r", q.compile())
+        # if hasattr(self.context, 'identifier'):
+        #     q._where = graph(self.context.identifier, q._where)
+        log.debug("Compiled query: %r", q.compile())
         return q
 
     def base_object(self, data):
