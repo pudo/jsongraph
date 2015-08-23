@@ -1,6 +1,7 @@
 from rdflib import URIRef, RDF
 from sparqlquery import Select, v, desc
 
+from jsongraph.query import Query, QueryNode
 from jsongraph.binding import Binding
 
 
@@ -62,3 +63,8 @@ class GraphOperations(object):
                 return [self._objectify(node, item, depth, path)]
         else:
             return node.toPython()
+
+    def query(self, q):
+        """ Run a query using the jsongraph query dialect. This expects an
+        input query, which can either be a dict or a list. """
+        return Query(self, None, QueryNode(None, None, q))

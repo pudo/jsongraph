@@ -2,7 +2,6 @@ from rdflib import Graph, URIRef, RDF
 # from jsonschema import validate
 
 from jsongraph.vocab import BNode
-from jsongraph.query import Query, QueryNode
 from jsongraph.metadata import MetaData
 from jsongraph.common import GraphOperations
 
@@ -95,11 +94,6 @@ class Context(GraphOperations):
         """ Clear all the pending statements in the local context, without
         transferring them to the main store. """
         self._graph = None
-
-    def query(self, q):
-        """ Run a query using the jsongraph query dialect. This expects an
-        input query, which can either be a dict or a list. """
-        return Query(self, None, QueryNode(None, None, q))
 
     def __str__(self):
         return self.identifier
