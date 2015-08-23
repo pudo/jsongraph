@@ -57,7 +57,6 @@ class Graph(GraphOperations):
         external triple store controlled via SPARQL. """
         if self._store is None:
             config = self.config.get('store', {})
-            print 'CONFIG', config
             if 'query' in config and 'update' in config:
                 self._store = sparql_store(config.get('query'),
                                            config.get('update'))

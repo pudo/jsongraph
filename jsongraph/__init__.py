@@ -1,7 +1,7 @@
 from jsongraph.graph import Graph
-from jsongraph.util import sparql_store
+from jsongraph.util import sparql_store, GraphException
 
-__all__ = [Graph, sparql_store]
+__all__ = [Graph, GraphException, sparql_store]
 
 import warnings
 warnings.filterwarnings(

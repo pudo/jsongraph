@@ -27,8 +27,7 @@ class Binding(SchemaVisitor):
 
     @property
     def predicate(self):
-        name = self.schema.get('rdfName', self.name)
-        return URIRef(PRED[name])
+        return PRED[self.schema.get('rdfName', self.name)]
 
     @property
     def reverse(self):
@@ -38,7 +37,7 @@ class Binding(SchemaVisitor):
 
     def get_property(self, predicate):
         for prop in self.properties:
-            if predicate == prop.predicate:
+            if predicate == PRED[prop.name]:
                 return prop
 
     @property
