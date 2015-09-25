@@ -30,8 +30,10 @@ class Context(GraphOperations):
         """ Stage ``data`` as a set of statements, based on the given
         ``schema`` definition. """
         binding = self.get_binding(schema, data)
-        emit = lambda t: self.graph.add(t)
-        return triplify(binding, emit)
+        uri, triples = triplify(binding)
+        for triple in triples:
+            self.graph.add(triple)
+        return uri
 
     def save(self):
         """ Transfer the statements in this context over to the main store. """
