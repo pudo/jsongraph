@@ -1,4 +1,3 @@
-import url
 from rdflib import Literal, URIRef
 # from rdflib.term import Identifier
 # from rdflib.namespace import RDF
@@ -18,17 +17,19 @@ class Binding(SchemaVisitor):
 
     @property
     def subject(self):
-        subject = self.schema.get('rdfSubject', 'id')
-        for prop in self.properties:
-            if prop.match(subject):
-                obj = prop.object
-                if not isinstance(obj, URIRef):
-                    obj = ID[obj]
-                return obj
-
-        if not hasattr(self, '_bnode'):
-            self._bnode = BNode()
-        return self._bnode
+        if not hasattr(self, '_rdf_subject'):
+            self._rdf_subject = None
+            subject = self.schema.get('rdfSubject', 'id')
+            for prop in self.properties:
+                if prop.match(subject):
+                    obj = prop.object
+                    if not isinstance(obj, URIRef):
+                        obj = ID[obj]
+                    self._rdf_subject = obj
+                    break
+            if self._rdf_subject is None:
+                self._rdf_subject = BNode()
+        return self._rdf_subject
 
     @property
     def predicate(self):
@@ -59,6 +60,5 @@ class Binding(SchemaVisitor):
                     return safe_uriref(self.data)
                 except:
                     pass
-            if not self.data.startswith(ID):
-                return ID[self.data]
+            return ID[self.data]
         return Literal(self.data)
