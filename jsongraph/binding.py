@@ -48,6 +48,8 @@ class Binding(SchemaVisitor):
 
     @property
     def object(self):
+        if self.data is None:
+            return self.data
         if self.schema.get('format') == 'uri' or \
                 self.schema.get('rdfType') == 'uri':
             try:
