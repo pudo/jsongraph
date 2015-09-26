@@ -23,7 +23,7 @@ class Binding(SchemaVisitor):
             for prop in self.properties:
                 if prop.match(subject):
                     obj = prop.object
-                    if not isinstance(obj, URIRef):
+                    if obj is not None and not isinstance(obj, URIRef):
                         obj = ID[obj]
                     self._rdf_subject = obj
                     break
