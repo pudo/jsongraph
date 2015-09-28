@@ -1,4 +1,4 @@
-from rdflib import Graph, URIRef, RDF
+from rdflib import Graph, URIRef
 # from jsonschema import validate
 
 from jsongraph.vocab import BNode
