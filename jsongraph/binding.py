@@ -40,6 +40,8 @@ class Binding(SchemaVisitor):
         name = self.schema.get('rdfReverse')
         if name is not None:
             return PRED[name]
+        if self.parent is not None and self.parent.is_array:
+            return self.parent.reverse
 
     def get_property(self, predicate):
         for prop in self.properties:
