@@ -11,7 +11,7 @@ pyenv/bin/python:
 	pyenv/bin/pip install wheel nose coverage unicodecsv python-dateutil
 	pyenv/bin/pip install -e .
 
-upload: clean install
+upload: test
 	pyenv/bin/python setup.py sdist bdist_wheel upload
 
 clean:

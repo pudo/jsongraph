@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='jsongraph',
-    version='0.2.1',
+    version='0.2.2',
     description="Library for data integration using a JSON/RDF object graph.",
     long_description="",
     classifiers=[
