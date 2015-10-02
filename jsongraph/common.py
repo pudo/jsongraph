@@ -41,9 +41,7 @@ class GraphOperations(object):
         object from the ``graph`` that represents the information available
         about this node. """
         if binding.is_object:
-            obj = {}
-            if binding.parent is None:
-                obj['$schema'] = binding.path
+            obj = {'$schema': binding.path}
             for (s, p, o) in self.graph.triples((node, None, None)):
                 prop = binding.get_property(p)
                 if prop is None or depth <= 1 or o in path:

@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 class Graph(GraphOperations):
     """ Registry for assigning names aliases to certain schemata. """
 
-    def __init__(self, base_uri=None, resolver=None, config=None):
+    def __init__(self, base_uri=None, resolver=None, config=None, graph=None):
         self.config = config or {}
         try:
             config_validator.validate(self.config)
@@ -25,6 +25,7 @@ class Graph(GraphOperations):
         self._resolver = resolver
         self._base_uri = base_uri
         self._store = None
+        self._graph = graph
         self._buffered = None
         self.aliases = {}
         for alias, schema in self.config.get('schemas', {}).items():
